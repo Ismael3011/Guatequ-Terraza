@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horarios Guatequé Terraza</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #ffffff; /* Fondo blanco */
+    color: #333;
+    margin: 10px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  header img {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  input, select, button {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #aaa;
+    font-size: 0.9rem;
+  }
+  button {
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border: none;
+    flex-shrink: 0;
+  }
+  button:hover { background: #45a049; }
+
+  /* Resultados y tabla con fondo gris claro */
+  .result {
+    background: #f0f0f0;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-width: 100%;
+    margin: 0 auto 20px auto;
+    font-size: 0.9rem;
+  }
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+  }
+  table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+    background: #e8e8e8; /* Color de la tabla */
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+    word-wrap: break-word;
+  }
+  th {
+    background: #4CAF50;
+    color: white;
+    position: sticky;
+    top: 0;
+    font-size: 0.85rem;
+  }
+  tr:nth-child(even) { background: #dcdcdc; }
+
+  /* Responsivo para móviles */
+  @media (max-width: 600px) {
+    h1 { font-size: 1.2rem; }
+    .controls { flex-direction: column; gap: 6px; }
+    table { font-size: 0.8rem; min-width: 100%; }
+    th, td { padding: 4px; }
+    .result { font-size: 0.85rem; padding: 10px; }
+  }
+</style>
+
+</head>
+<body>
+  <header>
+    <img src="logo.jpg" alt="Logo Gautequé">
+    <h1>Horarios Gautequé Terraza</h1>
+  </header>
+
+  <div class="controls">
+    <select id="daySelect">
+      <option value="Viernes 5">Viernes 5</option>
+      <option value="Sábado 6">Sábado 6</option>
+      <option value="Domingo 7">Domingo 7</option>
+      <option value="Lunes 8">Lunes 8</option>
+      <option value="Martes 9">Martes 9</option>
+      <option value="Miércoles 10">Miércoles 10</option>
+    </select>
+    <button onclick="checkDay()">Ver horarios</button>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchName" placeholder="Buscar camarero...">
+    <button onclick="searchWaiter()">Buscar</button>
+  </div>
+
+  <div class="controls">
+    <button onclick="saveSchedule()">💾 Guardar cambios</button>
+  </div>
+
+  <!-- Resultados antes de la tabla -->
+  <div class="result" id="result"></div>
+
+  <div class="table-container">
+    <table id="schedule">
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Viernes 5</th>
+          <th>Sábado 6</th>
+          <th>Domingo 7</th>
+          <th>Lunes 8</th>
+          <th>Martes 9</th>
+          <th>Miércoles 10</th>
+        </tr>
+      </thead>
+      <tbody>
+        <script>
+          for (let h = 12; h <= 22; h++) {
+            document.write(`<tr><td>${h}:00</td>`);
+            for (let d = 0; d < 6; d++) {
+              document.write(`<td contenteditable="true"></td>`);
+            }
+            document.write('</tr>');
+          }
+        </script>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function checkDay() {
+      const day = document.getElementById("daySelect").value;
+      const table = document.getElementById("schedule");
+      const dayIndex = Array.from(table.rows[0].cells).findIndex(c => c.innerText === day);
+      let result = `<h3>Horarios del ${day}</h3><ul>`;
+      for (let i = 1; i < table.rows.length; i++) {
+        let hour = table.rows[i].cells[0].innerText;
+        let waiter = table.rows[i].cells[dayIndex].innerText;
+        if (waiter.trim() !== "") {
+          result += `<li>${hour}: ${waiter}</li>`;
+        }
+      }
+      result += "</ul>";
+      document.getElementById("result").innerHTML = result;
+    }
+
+    function searchWaiter() {
+      const name = document.getElementById("searchName").value.trim().toLowerCase();
+      const table = document.getElementById("schedule");
+      let result = `<h3>Horarios de ${name}</h3><ul>`;
+      for (let d = 1; d < table.rows[0].cells.length; d++) {
+        let day = table.rows[0].cells[d].innerText;
+        for (let i = 1; i < table.rows.length; i++) {
+          let hour = table.rows[i].cells[0].innerText;
+          let waiter = table.rows[i].cells[d].innerText.toLowerCase();
+          if (waiter.includes(name) && name !== "") {
+            result += `<li>${day} - ${hour}</li>`;
+          }
+        }
+      }
+      result += "</ul>";
+      document.getElementById("result").innerHTML = result;
+    }
+
+    function saveSchedule() {
+      const table = document.getElementById("schedule");
+      let data = [];
+      for (let i = 1; i < table.rows.length; i++) {
+        let row = [];
+        for (let j = 0; j < table.rows[i].cells.length; j++) {
+          row.push(table.rows[i].cells[j].innerText);
+        }
+        data.push(row);
+      }
+      localStorage.setItem("scheduleData", JSON.stringify(data));
+      alert("✅ Horario guardado en este navegador");
+    }
+
+    function loadSchedule() {
+      const saved = localStorage.getItem("scheduleData");
+      if (saved) {
+        const table = document.getElementById("schedule");
+        const data = JSON.parse(saved);
+        for (let i = 0; i < data.length; i++) {
+          for (let j = 0; j < data[i].length; j++) {
+            table.rows[i+1].cells[j].innerText = data[i][j];
+          }
+        }
+      }
+    }
+
+    window.onload = loadSchedule;
+  </script>
+</body>
+</html>
